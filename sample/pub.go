@@ -16,5 +16,5 @@ func main() {
 	msg := amqp.Publishing{}
 	msg.ContentType = "text/plain"
 	msg.Body = []byte("exchange pub")
-	fmt.Println(c.PublishWithExchange("pubsub", "pskey", false, false, msg))
+	fmt.Println(c.Publish("pubsub", "pskey", false, false, msg))
 }

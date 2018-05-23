@@ -14,8 +14,5 @@ func main() {
 	msg := amqp.Publishing{}
 	msg.ContentType = "text/plain"
 	msg.Body = []byte("exchange")
-	fmt.Println(c.PublishWithExchange("test", "testkey", true, false, msg))
-
-	msg.Body = []byte("queue")
-	fmt.Println(c.Publish(true, false, msg))
+	fmt.Println(c.Publish("test", "testkey", true, false, msg))
 }

@@ -134,15 +134,7 @@ func (this *Session) QueueBind(queue, key, exchange string, noWait bool, args am
 	return this.channel.QueueBind(queue, key, exchange, noWait, args)
 }
 
-func (this *Session) Publish(mandatory, immediate bool, msg amqp.Publishing) error {
-	return this.channel.Publish("", this.queue, mandatory, immediate, msg)
-}
-
-func (this *Session) PublishWithQueue(queue string, mandatory, immediate bool, msg amqp.Publishing) error {
-	return this.channel.Publish("", queue, mandatory, immediate, msg)
-}
-
-func (this *Session) PublishWithExchange(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
+func (this *Session) Publish(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
 	return this.channel.Publish(exchange, key, mandatory, immediate, msg)
 }
 

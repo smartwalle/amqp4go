@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/streadway/amqp"
 	"github.com/smartwalle/amqp4go"
+	"github.com/streadway/amqp"
 )
 
 func main() {

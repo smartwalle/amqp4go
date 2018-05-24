@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/smartwalle/amqp4go"
+	"github.com/smartwalle/amqp4go/bak"
 	"github.com/streadway/amqp"
 )
 
 func main() {
 
-	var c = amqp4go.NewSession("amqp://admin:yangfeng@tw.smartwalle.tk:5672", "", "")
+	var c = bak.NewSession("amqp://admin:yangfeng@tw.smartwalle.tk:5672", "", "")
 	c.Open()
 
 	c.ExchangeDeclare("pubsub", "fanout", true, false, false, false, nil)

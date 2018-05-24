@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/sha1"
 	"fmt"
-	"github.com/smartwalle/amqp4go"
+	"github.com/smartwalle/amqp4go/bak"
 	"github.com/streadway/amqp"
 	"os"
 )
@@ -23,7 +23,7 @@ func h2(c *amqp.Channel, d amqp.Delivery) {
 }
 
 func main() {
-	var c = amqp4go.NewSession("amqp://admin:yangfeng@tw.smartwalle.tk:5672", identity(), "sub")
+	var c = bak.NewSession("amqp://admin:yangfeng@tw.smartwalle.tk:5672", identity(), "sub")
 	c.Handle(h2)
 	c.Open()
 

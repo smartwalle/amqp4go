@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/sha1"
 	"fmt"
-	"github.com/smartwalle/amqp4go/bak"
+	"github.com/smartwalle/amqp4go"
 	"github.com/streadway/amqp"
 	"os"
 )
@@ -23,16 +23,20 @@ func h2(c *amqp.Channel, d amqp.Delivery) {
 }
 
 func main() {
-	var c = bak.NewSession("amqp://admin:yangfeng@tw.smartwalle.tk:5672", identity(), "sub")
-	c.Handle(h2)
-	c.Open()
+	var p = amqp4go.NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", "hh", 2, 1)
+	var s = p.GetSession()
 
-	c.ExchangeDeclare("pubsub", "fanout", true, false, false, false, nil)
+	s.Handle(h2)
 
-	c.QueueDeclare(identity(), false, true, false, false, nil)
-	c.QueueBind(identity(), "pskey", "pubsub", false, nil)
+	s.Channel().ExchangeDeclare("pubsub", "fanout", true, false, false, false, nil)
 
-	c.Run(false, false, false, false, nil)
+	s.Channel().QueueDeclare(identity(), false, true, false, false, nil)
+	s.Channel().QueueBind(identity(), "pskey", "pubsub", false, nil)
+
+	s.Run(identity(), false, false, false, false, nil)
+
+	//s.Shutdown()
+	//p.Release(s)
 
 	done := make(chan bool)
 	<-done

@@ -6,6 +6,13 @@ import (
 	"sync"
 )
 
+const (
+	K_EXCHANGE_KIND_DIRECT  = "direct" // Direct交换机：转发消息到routingKey指定队列（完全匹配，单播）。
+	K_EXCHANGE_KIND_FANOUT  = "fanout" // Fanout交换机：转发消息到所有绑定队列（最快，广播）
+	K_EXCHNAGE_KIND_TOPIC   = "topic"  // Topic交换机：按规则转发消息（最灵活，组播）
+	K_EXCHNAGE_KIND_HEADERS = "headers"
+)
+
 type handler func(*amqp.Channel, amqp.Delivery)
 
 type Session struct {

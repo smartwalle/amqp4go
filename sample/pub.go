@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	var p = amqp4go.NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", "hh", 2, 1)
+	var p = amqp4go.NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", 2, 1)
 	var s = p.GetSession()
 
 	s.Channel().ExchangeDeclare("pubsub", "fanout", true, false, false, false, nil)

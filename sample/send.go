@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	var p = amqp4go.NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", "hh", 10, 1)
+	var p = amqp4go.NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", 10, 1)
 
 	msg := amqp.Publishing{}
 	msg.ContentType = "text/plain"

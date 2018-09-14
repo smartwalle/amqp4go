@@ -1,7 +1,7 @@
 package amqp4go
 
 import (
-	"github.com/smartwalle/errors"
+	"errors"
 	"github.com/streadway/amqp"
 	"sync"
 )
@@ -19,29 +19,21 @@ type Session struct {
 	conn *amqp.Connection
 	ch   *amqp.Channel
 
-	tag string
+	tags map[string]struct{}
 
-	h    handler
-	done chan struct{}
+	h handler
 
-	mu        sync.Mutex
-	isRunning bool
+	mu sync.Mutex
 }
 
 func (this *Session) Close() (err error) {
+	this.Cancel()
+
 	this.mu.Lock()
-
-	if this.isRunning {
-		this.mu.Unlock()
-		this.Shutdown()
-		this.mu.Lock()
-	}
-
 	defer this.mu.Unlock()
+
 	if this.ch != nil {
-		if err = this.ch.Cancel(this.tag, true); err != nil {
-			return err
-		}
+		this.ch.Close()
 		this.ch = nil
 	}
 	if this.conn != nil {
@@ -61,56 +53,50 @@ func (this *Session) Channel() *amqp.Channel {
 	return this.ch
 }
 
-func (this *Session) Tag() string {
-	return this.tag
-}
-
-func (this *Session) Run(queue string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (err error) {
+func (this *Session) Consume(queue, tag string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (err error) {
 	this.mu.Lock()
 	defer this.mu.Unlock()
-	if this.isRunning {
+
+	if _, ok := this.tags[tag]; ok {
 		return
 	}
-
 	if this.ch == nil {
 		return errors.New("connection is closed")
 	}
+	this.tags[tag] = struct{}{}
 
-	ds, err := this.ch.Consume(queue, this.tag, autoAck, exclusive, noLocal, noWait, args)
+	ds, err := this.ch.Consume(queue, tag, autoAck, exclusive, noLocal, noWait, args)
 	if err != nil {
 		return err
 	}
-	go this.handle(ds)
-	this.isRunning = true
+	go this.handle(tag, ds)
 	return nil
 }
 
-func (this *Session) Shutdown() {
+func (this *Session) Cancel() {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
-	if this.isRunning == false {
-		return
+	for tag := range this.tags {
+		this.ch.Cancel(tag, true)
+		delete(this.tags, tag)
 	}
-
-	this.done <- struct{}{}
 }
 
 func (this *Session) Handle(h handler) {
 	this.h = h
 }
 
-func (this *Session) handle(deliveries <-chan amqp.Delivery) {
+func (this *Session) handle(tag string, deliveries <-chan amqp.Delivery) {
 	for {
 		select {
-		case d := <-deliveries:
-
+		case d, ok := <-deliveries:
+			if ok == false {
+				return
+			}
 			if this.h != nil {
 				this.h(this.ch, d)
 			}
-		case <-this.done:
-			this.isRunning = false
-			return
 		}
 	}
 }

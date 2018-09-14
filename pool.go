@@ -1,12 +1,11 @@
 package amqp4go
 
 import (
-	"github.com/smartwalle/errors"
 	"github.com/smartwalle/pool4go"
 	"github.com/streadway/amqp"
 )
 
-func NewAMQP(addr, tag string, maxActive, maxIdle int) (p *Pool) {
+func NewAMQP(addr string, maxActive, maxIdle int) (p *Pool) {
 	var dialFunc = func() (pool4go.Conn, error) {
 		conn, err := amqp.Dial(addr)
 		if err != nil {
@@ -20,9 +19,6 @@ func NewAMQP(addr, tag string, maxActive, maxIdle int) (p *Pool) {
 		var s = &Session{}
 		s.conn = conn
 		s.ch = ch
-		s.tag = tag
-		s.done = make(chan struct{})
-		s.isRunning = false
 		return s, nil
 	}
 
@@ -42,13 +38,13 @@ func (this *Pool) GetSession() *Session {
 	if err != nil {
 		return nil
 	}
-	return c.(*Session)
+	var s = c.(*Session)
+	s.tags = make(map[string]struct{})
+	return s
 }
 
 func (this *Pool) Release(s *Session) error {
-	if s.isRunning {
-		return errors.New("session still running")
-	}
+	s.Cancel()
 	this.Pool.Release(s, false)
 	return nil
 }

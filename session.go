@@ -13,7 +13,7 @@ const (
 	K_EXCHANGE_KIND_HEADERS = "headers"
 )
 
-type handler func(*amqp.Channel, amqp.Delivery)
+type Handler func(*amqp.Channel, amqp.Delivery)
 
 type Session struct {
 	conn *amqp.Connection
@@ -21,7 +21,7 @@ type Session struct {
 
 	tags map[string]struct{}
 
-	//h handler
+	//h Handler
 
 	mu sync.Mutex
 }
@@ -53,7 +53,7 @@ func (this *Session) Channel() *amqp.Channel {
 	return this.ch
 }
 
-func (this *Session) Consume(queue, tag string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table, h handler) (err error) {
+func (this *Session) Consume(queue, tag string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table, h Handler) (err error) {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
@@ -83,7 +83,7 @@ func (this *Session) Cancel() {
 	}
 }
 
-func (this *Session) handle(h handler, deliveries <-chan amqp.Delivery) {
+func (this *Session) handle(h Handler, deliveries <-chan amqp.Delivery) {
 	for {
 		select {
 		case d, ok := <-deliveries:

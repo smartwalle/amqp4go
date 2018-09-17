@@ -9,8 +9,8 @@ import (
 const (
 	K_EXCHANGE_KIND_DIRECT  = "direct" // Direct交换机：转发消息到routingKey指定队列（完全匹配，单播）。
 	K_EXCHANGE_KIND_FANOUT  = "fanout" // Fanout交换机：转发消息到所有绑定队列（最快，广播）
-	K_EXCHNAGE_KIND_TOPIC   = "topic"  // Topic交换机：按规则转发消息（最灵活，组播）
-	K_EXCHNAGE_KIND_HEADERS = "headers"
+	K_EXCHANGE_KIND_TOPIC   = "topic"  // Topic交换机：按规则转发消息（最灵活，组播）
+	K_EXCHANGE_KIND_HEADERS = "headers"
 )
 
 type handler func(*amqp.Channel, amqp.Delivery)
@@ -21,7 +21,7 @@ type Session struct {
 
 	tags map[string]struct{}
 
-	h handler
+	//h handler
 
 	mu sync.Mutex
 }
@@ -53,7 +53,7 @@ func (this *Session) Channel() *amqp.Channel {
 	return this.ch
 }
 
-func (this *Session) Consume(queue, tag string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (err error) {
+func (this *Session) Consume(queue, tag string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table, h handler) (err error) {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
@@ -69,7 +69,7 @@ func (this *Session) Consume(queue, tag string, autoAck, exclusive, noLocal, noW
 	if err != nil {
 		return err
 	}
-	go this.handle(tag, ds)
+	go this.handle(h, ds)
 	return nil
 }
 
@@ -83,19 +83,15 @@ func (this *Session) Cancel() {
 	}
 }
 
-func (this *Session) Handle(h handler) {
-	this.h = h
-}
-
-func (this *Session) handle(tag string, deliveries <-chan amqp.Delivery) {
+func (this *Session) handle(h handler, deliveries <-chan amqp.Delivery) {
 	for {
 		select {
 		case d, ok := <-deliveries:
 			if ok == false {
 				return
 			}
-			if this.h != nil {
-				this.h(this.ch, d)
+			if h != nil {
+				h(this.ch, d)
 			}
 		}
 	}

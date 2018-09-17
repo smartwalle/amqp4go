@@ -26,14 +26,12 @@ func main() {
 	var p = amqp4go.NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", 2, 1)
 	var s = p.GetSession()
 
-	s.Handle(h2)
-
 	s.Channel().ExchangeDeclare("pubsub", "fanout", true, false, false, false, nil)
 
 	s.Channel().QueueDeclare(identity(), false, true, false, false, nil)
 	s.Channel().QueueBind(identity(), "pskey", "pubsub", false, nil)
 
-	s.Consume(identity(), "ss", false, false, false, false, nil)
+	s.Consume(identity(), "ss", false, false, false, false, nil, h2)
 
 	//s.Cancel()
 	//p.Release(s)

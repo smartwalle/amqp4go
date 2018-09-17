@@ -14,8 +14,7 @@ func h1(c *amqp.Channel, d amqp.Delivery) {
 func main() {
 	var p = amqp4go.NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", 2, 1)
 	var s = p.GetSession()
-	s.Handle(h1)
-	s.Consume("task_queue", "Tag1", false, false, false, false, nil)
+	s.Consume("task_queue", "Tag1", false, false, false, false, nil, h1)
 
 	//p.Release(s)
 

@@ -7,14 +7,14 @@ import (
 )
 
 func TestNewAMQP(t *testing.T) {
-	var p = NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", "hh", 2, 1)
+	var p = NewAMQP("amqp://admin:yangfeng@tw.smartwalle.tk:5672", 2, 1)
 	var s = p.GetSession()
 
 	s.h = func(channel *amqp.Channel, d amqp.Delivery) {
 		fmt.Println(d.DeliveryTag, string(d.Body), d.ConsumerTag)
 		d.Ack(false)
 	}
-	s.Run("task_queue", false, false, false, false, nil)
+	s.Consume("task_queue", "my_tag", false, false, false, false, nil)
 
 	s = p.GetSession()
 

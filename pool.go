@@ -38,6 +38,9 @@ func (this *Pool) GetSession() *Session {
 	if err != nil {
 		return nil
 	}
+	if c == nil {
+		return nil
+	}
 	var s = c.(*Session)
 	s.tags = make(map[string]struct{})
 	return s
